@@ -1,0 +1,1 @@
+cmd_/home/lgh/embeded/kernelPratice/driver.ko := arm-linux-gnueabihf-ld -r  -EL -z noexecstack   --build-id=sha1  -T scripts/module.lds -o /home/lgh/embeded/kernelPratice/driver.ko /home/lgh/embeded/kernelPratice/driver.o /home/lgh/embeded/kernelPratice/driver.mod.o;  true

@@ -1,0 +1,1 @@
+cmd_/home/lgh/embeded/kernelPratice3/led_pratice.ko := arm-linux-gnueabihf-ld -r  -EL -z noexecstack   --build-id=sha1  -T scripts/module.lds -o /home/lgh/embeded/kernelPratice3/led_pratice.ko /home/lgh/embeded/kernelPratice3/led_pratice.o /home/lgh/embeded/kernelPratice3/led_pratice.mod.o;  true

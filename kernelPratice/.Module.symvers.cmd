@@ -1,0 +1,1 @@
+cmd_/home/lgh/embeded/kernelPratice/Module.symvers :=  sed 's/ko$$/o/'  /home/lgh/embeded/kernelPratice/modules.order | scripts/mod/modpost -m -a    -o /home/lgh/embeded/kernelPratice/Module.symvers -e -i Module.symvers -T - 

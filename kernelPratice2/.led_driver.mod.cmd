@@ -1,0 +1,1 @@
+cmd_/home/lgh/embeded/kernelPratice2/led_driver.mod := printf '%s\n'   led_driver.o | awk '!x[$$0]++ { print("/home/lgh/embeded/kernelPratice2/"$$0) }' > /home/lgh/embeded/kernelPratice2/led_driver.mod

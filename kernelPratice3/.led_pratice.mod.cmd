@@ -1,0 +1,1 @@
+cmd_/home/lgh/embeded/kernelPratice3/led_pratice.mod := printf '%s\n'   led_pratice.o | awk '!x[$$0]++ { print("/home/lgh/embeded/kernelPratice3/"$$0) }' > /home/lgh/embeded/kernelPratice3/led_pratice.mod

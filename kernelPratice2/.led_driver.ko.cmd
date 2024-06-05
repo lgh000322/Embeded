@@ -1,0 +1,1 @@
+cmd_/home/lgh/embeded/kernelPratice2/led_driver.ko := arm-linux-gnueabihf-ld -r  -EL -z noexecstack   --build-id=sha1  -T scripts/module.lds -o /home/lgh/embeded/kernelPratice2/led_driver.ko /home/lgh/embeded/kernelPratice2/led_driver.o /home/lgh/embeded/kernelPratice2/led_driver.mod.o;  true
