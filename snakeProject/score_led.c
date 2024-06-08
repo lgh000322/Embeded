@@ -85,12 +85,9 @@ ssize_t device_write(struct file* filp, const char *buf,size_t count,loff_t *f_p
     }
 
     for(int i=0;i<8;i++){
-        printk(KERN_INFO "write for문 실행중입니다.");
         if(cbuf[i]==1){
-            printk(KERN_INFO "cbuf[i]==1 일 때 실행중입니다.");
             gpio_set_value(GPIO4,1);
         }else{
-            printk(KERN_INFO "cbuf[i]!=1 일 때 실행중입니다.");
             gpio_set_value(GPIO4,0);
         }
 

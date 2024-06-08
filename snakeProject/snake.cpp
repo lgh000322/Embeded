@@ -15,10 +15,7 @@
 #include <sys/mman.h>
 #include <stdlib.h>
 
-#define DATA_IN 4
-#define GPFSEL0 0x00
-#define GPIO_BASE 0x3F200000
-#define GPCLRO 0x28
+#define MAX_SIZE 8
 
 std::mutex m;
 std::queue<int> q;
@@ -31,6 +28,7 @@ static const uint16_t spiDelay = 0;
 static uint32_t spiSpeed = 1000000;
 static int spiChannel = 2;
 static int spiFd;
+static int ledFd;
 
 const int width = 80;
 const int height = 20;
@@ -145,6 +143,22 @@ void UpdateGame()
         fruitCordY = rand() % height;
         snakeTailLen++;
     }
+
+    //playerScore에 따라 led가 켜지는 로직 추가
+   int ledBrightness = playerScore / 100;
+    if (ledBrightness > MAX_SIZE)
+        ledBrightness = MAX_SIZE;
+
+    char buf[MAX_SIZE] = {0};
+    for (int i = MAX_SIZE - 1; i >= MAX_SIZE - ledBrightness; --i)
+        buf[i] = 1;
+
+    if (write(ledFd, buf, MAX_SIZE) < 0) {
+        printf("LED WRITE FAILED: %s\n", strerror(errno));
+        close(ledFd);
+        return;
+    }
+
 }
 
 void UserInput()
@@ -228,13 +242,35 @@ int adc_mcp3008_read(int channel) {
     return ((buf[1] & 0x03) << 8) | buf[2];
 }
 
-void initFd() {
+int led_setup(){
     int fd;
+    fd=open("/dev/my_led_dev",O_RDWR);
+
+    if(fd2<0)
+    {
+        std::cout<<"fd2 오류"<<std::endl;
+        exit(1);
+    }
+
+    ledFd=fd;
+    return fd;
+}
+
+void initFd() {
+    int fd,fd2;
     fd = spi_setup(spiChannel, spiSpeed, 0);
     if (fd < 0) {
         std::cout << "fd오류" << std::endl;
         exit(1);
     }
+
+    fd2=led_setup();
+    if(fd2<0)
+    {
+        std::cout<<"fd2 오류"<<std::endl;
+        exit(1);
+    }
+
 }
 
 void snakeAct() {
@@ -307,6 +343,8 @@ int main()
     if(isGameOver)
     {
        cv.notify_all();
+       close(ledFd);
+       close(spiFd);
     }
     
     return 0;

@@ -1,0 +1,1 @@
+cmd_/home/lgh/embeded/snakeProject/Module.symvers :=  sed 's/ko$$/o/'  /home/lgh/embeded/snakeProject/modules.order | scripts/mod/modpost -m -a    -o /home/lgh/embeded/snakeProject/Module.symvers -e -i Module.symvers -T - 
