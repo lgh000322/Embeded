@@ -316,7 +316,10 @@ void joyStickAct() {
 			dir=STOP;
 		}
 
-        q.push(dir);
+        if(dir!=STOP){
+             q.push(dir);
+        }
+        
         m.unlock();
         cv.notify_one();
         usleep(150000); // Delay to avoid rapid input
