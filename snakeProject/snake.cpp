@@ -29,7 +29,7 @@ static uint32_t spiSpeed = 1000000;
 static int spiChannel = 2;
 static int spiFd;
 static int ledFd;
-
+static string globalPlayerName;
 const int width = 80;
 const int height = 20;
 
@@ -134,7 +134,7 @@ void UpdateGame()
     for (int i = 0; i < snakeTailLen; i++) {
         if (snakeTailX[i] == x && snakeTailY[i] == y)
 		//테스트를 위해 게임 종료조건을 false로 설정함.
-            isGameOver = false;
+            isGameOver = true;
     }
 
     if (x == fruitCordX && y == fruitCordY) {
@@ -145,13 +145,16 @@ void UpdateGame()
     }
 
     //playerScore에 따라 led가 켜지는 로직 추가
-   int ledBrightness = playerScore / 100;
+    int ledBrightness = playerScore / 100;
     if (ledBrightness > MAX_SIZE)
         ledBrightness = MAX_SIZE;
 
     char buf[MAX_SIZE] = {0};
-    for (int i = MAX_SIZE - 1; i >= MAX_SIZE - ledBrightness; --i)
-        buf[i] = 1;
+
+    for(int i=0;i<ledBrightness;i++)
+    {
+        buf[i]=1;
+    }
 
     if (write(ledFd, buf, MAX_SIZE) < 0) {
         printf("LED WRITE FAILED: %s\n", strerror(errno));
@@ -246,7 +249,7 @@ int led_setup(){
     int fd;
     fd=open("/dev/my_led_dev",O_RDWR);
 
-    if(fd2<0)
+    if(fd<0)
     {
         std::cout<<"fd2 오류"<<std::endl;
         exit(1);
@@ -286,11 +289,9 @@ void snakeAct() {
         sDir = static_cast<snakesDirection>(q.front());
         q.pop();
         
-		if(sDir!=STOP)
-		{
-			GameRender("Player");
-            UpdateGame();
-		}
+        GameRender(globalPlayerName);
+        UpdateGame();
+        
         
         lk.unlock();
     }
@@ -298,31 +299,32 @@ void snakeAct() {
 
 void joyStickAct() {
     while (!isGameOver) {
-		m.lock();
-        unsigned int x_value = adc_mcp3008_read(0);
-        unsigned int y_value = adc_mcp3008_read(1);
+        {
+            std::lock_guard<std::mutex> lg(m);
+            unsigned int x_value = adc_mcp3008_read(0);
+            unsigned int y_value = adc_mcp3008_read(1);
 
-        snakesDirection dir = sDir;
+            snakesDirection dir = sDir;
 
-        if ((x_value > 400 && x_value < 600) && (y_value < 300)) {
-            dir = UP;
-        } else if ((x_value > 400 && x_value < 600) && (y_value > 700)) {
-            dir = DOWN;
-        } else if ((x_value < 400) && (y_value > 300 && y_value < 700)) {
-            dir = LEFT;
-        } else if ((x_value > 600) && (y_value > 300 && y_value < 700)) {
-            dir = RIGHT;
-        }else{
-			dir=STOP;
-		}
+            if ((x_value > 300 && x_value < 700) && (y_value < 300)) {
+                dir = UP;
+            } else if ((x_value > 300 && x_value < 700) && (y_value > 800)) {
+                dir = DOWN;
+            } else if ((x_value < 300) && (y_value > 300 && y_value < 700)) {
+                dir = LEFT;
+            } else if ((x_value > 700) && (y_value > 300 && y_value < 700)) {
+                dir = RIGHT;
+            } else {
+                dir = STOP;
+            }
 
-        if(dir!=STOP){
-             q.push(dir);
+            if(dir != STOP) {
+                q.push(dir);
+                cv.notify_one();
+            }
         }
-        
-        m.unlock();
-        cv.notify_one();
-        usleep(150000); // Delay to avoid rapid input
+
+        usleep(130000); // Delay to avoid rapid input
     }
 }
 
@@ -331,11 +333,11 @@ int main()
     string playerName;
     cout << "Enter your name: ";
     cin >> playerName;
+    globalPlayerName=playerName;
 
     GameInit();
     initFd();
-	GameRender("Player");
-	UpdateGame();
+    GameRender(playerName); // 게임 시작 전 초기 렌더링
 
     std::thread t1(snakeAct);
     std::thread t2(joyStickAct);
@@ -343,12 +345,12 @@ int main()
     t1.join();
     t2.join();
 
-    if(isGameOver)
+    if (isGameOver)
     {
-       cv.notify_all();
-       close(ledFd);
-       close(spiFd);
+        cv.notify_all();
+        close(ledFd);
+        close(spiFd);
     }
-    
+
     return 0;
 }
