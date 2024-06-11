@@ -305,6 +305,7 @@ void joyStickAct() {
             unsigned int y_value = adc_mcp3008_read(1);
 
             snakesDirection dir = sDir;
+            
 
             if ((x_value > 300 && x_value < 700) && (y_value < 300)) {
                 dir = UP;
@@ -330,14 +331,12 @@ void joyStickAct() {
 
 int main()
 {
-    string playerName;
     cout << "Enter your name: ";
-    cin >> playerName;
-    globalPlayerName=playerName;
+    cin >> globalPlayerName;
 
     GameInit();
     initFd();
-    GameRender(playerName); // 게임 시작 전 초기 렌더링
+    GameRender(globalPlayerName); 
 
     std::thread t1(snakeAct);
     std::thread t2(joyStickAct);
